@@ -67,3 +67,4 @@ if __name__ == '__main__':
     sys.excepthook = sys.excepthook
     ex.show()
     sys.exit(app.exec())
+
