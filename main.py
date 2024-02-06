@@ -1,49 +1,69 @@
-from pybit.unified_trading import HTTP
+import os
+import sys
 
 import requests
-import json
-import datetime
-import pygame
-BACKGROUND = pygame.Color(0, 100, 100)
-pygame.init()
-clock = pygame.time.Clock()
+from PyQt5.QtGui import QPixmap
+from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QMainWindow, QTextEdit, QPushButton
+from PyQt5 import uic
+from PIL import Image
 
-# Set up the API key (optional)
-FPS = 900
+SCREEN_SIZE = [800, 600]
 
 
-def get_ticker():
-    response = requests.get("https://api.bybit.com/v2/public/tickers?symbol=BTCUSD")
-    data = json.loads(response.text)
-    return data["result"][0]['last_price']
+class Example(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        uic.loadUi('wind.ui', self)
+        self.getimage()
+        self.initUI()
+        self.pushButton.clicked.connect(self.getimage)
+
+    def getimage(self):
+        map_request = "http://static-maps.yandex.ru/1.x/"
+        response_params = {
+            'll': f'{float(self.Xedit.toPlainText())},{float(self.Yedit.toPlainText())}',
+            'spn': f'{float(self.sizeEdit.toPlainText())},{float(self.sizeEdit.toPlainText())}',
+            'l': 'map'
+        }
+        response = requests.get(map_request, params=response_params)
+
+        if not response:
+            print("Ошибка выполнения запроса:")
+            print(map_request)
+            print("Http статус:", response.status_code, "(", response.reason, ")")
+            sys.exit(1)
+
+        self.map_file = "map.png"
+        with open(self.map_file, "wb") as file:
+            file.write(response.content)
+        myimg = Image.open('map.png')
+        myimg.save('map.png', 'png')
+        self.showImage()
+
+    def initUI(self):
+        self.setGeometry(150, 150, *SCREEN_SIZE)
+        self.setWindowTitle('Отображение карты')
+        self.pixmap = QPixmap("map.png")
+        self.map.move(0, 0)
+        self.map.resize(500, 400)
+        self.map.setPixmap(self.pixmap)
+
+    def showImage(self):
+        self.map_file = 'map.png'
+        self.pixmap = QPixmap('map.png')
+        self.map.move(0, 0)
+        self.map.resize(500, 400)
+        self.map.setPixmap(self.pixmap)
+
+    def closeEvent(self, event):
+        """При закрытии формы подчищаем за собой"""
+        # os.remove(self.map_file)
+        pass
 
 
-if __name__ == "__main__":
-    width, height = 500, 500
-    screen = pygame.display.set_mode((width, height))
-    running = True
-    font = pygame.font.SysFont("New Roman", 30)
-    corner_x = 10
-    corner_y = 10
-    pygame.display.flip()
-    GREEN_COLOR = (100, 255, 25)
-    RED_COLOR = (255, 25, 25)
-    btc_now = float(get_ticker())
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-        BTC_price = float(get_ticker())
-        if btc_now >= BTC_price:
-
-            text = font.render(str(BTC_price), True, RED_COLOR)
-            btc_now = BTC_price
-        else:
-            text = font.render(str(BTC_price), True, GREEN_COLOR)
-            btc_now = BTC_price
-        text_width, text_height = text.get_size()
-        screen.fill(BACKGROUND)
-        screen.blit(text, (corner_x, corner_y))
-
-        pygame.display.update()
-        clock.tick(FPS)
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    ex = Example()
+    sys.excepthook = sys.excepthook
+    ex.show()
+    sys.exit(app.exec())
