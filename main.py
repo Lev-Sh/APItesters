@@ -71,14 +71,17 @@ class Example(QMainWindow):
     def scaleUp(self):
         a = float(self.sizeEdit.toPlainText())
         a += 3
-        self.sizeEdit.setText(str(a))
-        self.getimage()
+        if a < 60:
+
+            self.sizeEdit.setText(str(a))
+            self.getimage()
 
     def scaleDown(self):
         a = float(self.sizeEdit.toPlainText())
-        a -= 3
-        self.sizeEdit.setText(str(a))
-        self.getimage()
+        if a > 4:
+            a -= 3
+            self.sizeEdit.setText(str(a))
+            self.getimage()
 
     def closeEvent(self, event):
         """При закрытии формы подчищаем за собой"""
