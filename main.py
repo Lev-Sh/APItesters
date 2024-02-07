@@ -2,9 +2,10 @@ import os
 import sys
 
 import requests
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtGui import QPixmap, QKeyEvent
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QMainWindow, QTextEdit, QPushButton
 from PyQt5 import uic
+from PyQt5.QtCore import Qt
 from PIL import Image
 
 SCREEN_SIZE = [800, 600]
@@ -55,6 +56,30 @@ class Example(QMainWindow):
         self.map.resize(500, 400)
         self.map.setPixmap(self.pixmap)
 
+    def keyPressEvent(self, event: QKeyEvent):
+
+        match event.key():
+            case Qt.Key.Key_L:
+                self.scaleUp()
+            case Qt.Key.Key_O:
+                self.scaleDown()
+            case Qt.Key.Key_PageUp:
+                self.scaleUp()
+            case Qt.Key.Key_PageDown:
+                self.scaleDown()
+
+    def scaleUp(self):
+        a = float(self.sizeEdit.toPlainText())
+        a += 3
+        self.sizeEdit.setText(str(a))
+        self.getimage()
+
+    def scaleDown(self):
+        a = float(self.sizeEdit.toPlainText())
+        a -= 3
+        self.sizeEdit.setText(str(a))
+        self.getimage()
+
     def closeEvent(self, event):
         """При закрытии формы подчищаем за собой"""
         # os.remove(self.map_file)
@@ -67,4 +92,3 @@ if __name__ == '__main__':
     sys.excepthook = sys.excepthook
     ex.show()
     sys.exit(app.exec())
-
