@@ -3,28 +3,55 @@ import sys
 
 import requests
 from PyQt5.QtGui import QPixmap, QKeyEvent
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QMainWindow, QTextEdit, QPushButton
+from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QMainWindow, QButtonGroup, QRadioButton
 from PyQt5 import uic
 from PyQt5.QtCore import Qt
 from PIL import Image
+import math
 
 SCREEN_SIZE = [800, 600]
 
 
+# maptype = 'map'
+
+
 class Example(QMainWindow):
     def __init__(self):
+        self.a = 'map'
+
         super().__init__()
         uic.loadUi('wind.ui', self)
         self.getimage()
         self.initUI()
         self.pushButton.clicked.connect(self.getimage)
+        self.SCHEMA.clicked.connect(self.SHM)
+        self.HYBRIT.clicked.connect(self.HYB)
+        self.SPYTNIK.clicked.connect(self.SPY)
+
+        self.types_maps = {
+            'SCHEMA': 'map',
+            'HYBRIT': 'sat',
+            'SPYTNIK': 'skl'
+        }
+
+    def SHM(self):
+        self.a = self.types_maps['SCHEMA']
+        print(self.a)
+
+    def HYB(self):
+        self.a = self.types_maps['HYBRIT']
+        print(self.a)
+
+    def SPY(self):
+        self.a = self.types_maps['SPYTNIK']
+        print(self.a)
 
     def getimage(self):
         map_request = "http://static-maps.yandex.ru/1.x/"
         response_params = {
             'll': f'{float(self.Xedit.toPlainText())},{float(self.Yedit.toPlainText())}',
             'spn': f'{float(self.sizeEdit.toPlainText())},{float(self.sizeEdit.toPlainText())}',
-            'l': 'map'
+            'l': self.a
         }
         response = requests.get(map_request, params=response_params)
 
@@ -67,12 +94,31 @@ class Example(QMainWindow):
                 self.scaleUp()
             case Qt.Key.Key_PageDown:
                 self.scaleDown()
+            case Qt.Key.Key_U:
+                self.movebydir(0, 1)
+            case Qt.Key.Key_H:
+                self.movebydir(1, 0)
+            case Qt.Key.Key_J:
+                self.movebydir(0, -1)
+            case Qt.Key.Key_K:
+                self.movebydir(-1, 0)
+
+    def movebydir(self, x, y):
+        a = float(self.xEdit.toPlainText())
+        b = float(self.yEdit.toPlainText())
+        a += x
+        b += y
+        if 0 < a < 200:
+            self.sizeEdit.setText(1)
+            self.getimage()
+        if 0 < b < 200:
+            self.sizeEdit.setText(1)
+            self.getimage()
 
     def scaleUp(self):
         a = float(self.sizeEdit.toPlainText())
         a += 3
         if a < 60:
-
             self.sizeEdit.setText(str(a))
             self.getimage()
 
